@@ -24,6 +24,10 @@ export const swaggerSpec = {
   },
   servers: [
     {
+      url: 'https://hotelfinder-api.onrender.com',
+      description: 'Production Render Cloud API Server',
+    },
+    {
       url: '/',
       description: 'Current Environment Host Server',
     },

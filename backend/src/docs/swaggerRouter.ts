@@ -181,7 +181,7 @@ const customCss = `
 `;
 
 // Options for configuring Swagger UI presentation
-const swaggerUiOptions: swaggerUi.SwaggerUiOptions = {
+const swaggerUiOptions: Record<string, any> = {
   customCss,
   customSiteTitle: 'Hotel Finder API Docs - Aakarsh Sharma',
   swaggerOptions: {

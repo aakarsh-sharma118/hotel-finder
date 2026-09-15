@@ -43,6 +43,7 @@ export const IS_PRODUCTION: boolean = NODE_ENV === 'production';
 export const ALLOWED_ORIGINS: string[] = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://hotelfinder-api.onrender.com',
   FRONTEND_URL,
   ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim()) : []),
 ].filter(Boolean);

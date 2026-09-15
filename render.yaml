@@ -6,7 +6,7 @@ services:
     name: hotelfinder-api
     runtime: node
     rootDir: backend
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: node dist/server.js
     healthCheckPath: /health
     envVars:
@@ -32,7 +32,7 @@ services:
     name: hotelfinder-worker
     runtime: node
     rootDir: backend
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: node dist/worker.js
     envVars:
       - key: NODE_ENV
