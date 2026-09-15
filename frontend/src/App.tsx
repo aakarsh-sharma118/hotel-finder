@@ -1,4 +1,13 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+/**
+ * @fileoverview Main React application component for Hotel Rate Comparator.
+ * Configures QueryClientProvider, layout containers, and view routing.
+ *
+ * © 2026 Aakarsh Sharma. All rights reserved.
+ *
+ * @module App
+ */
+
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Sparkles, ShieldCheck, Clock, Percent } from 'lucide-react';
 import Header from './components/Header';
 import SearchForm from './components/SearchForm';
@@ -10,18 +19,9 @@ import Footer from './components/Footer';
 import { useHotelStore } from './store/useHotelStore';
 import { useHotelSearch } from './hooks/useHotelSearch';
 import { useUrlRouting } from './hooks/useUrlRouting';
-import { SearchHotelsParams } from './api/types';
+import { SearchHotelsParams } from './types';
 import { PAGE_STRINGS } from './constants/pageStrings';
-
-// Query client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+import { queryClient } from './api/queryClient';
 
 function HotelComparatorApp() {
   const { city, activeTab } = useHotelStore();

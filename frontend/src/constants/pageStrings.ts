@@ -108,6 +108,7 @@ export const PAGE_STRINGS = {
     supplierB: 'Supplier B',
     rateFrom: 'Rate from',
     bestRateBadge: 'Best Deal',
+    freeCancellationBadge: 'Free Cancellation',
     compareBadgePrefix: 'Supplier Comparison:',
     aIsCheaper: 'Supplier A saves more',
     bIsCheaper: 'Supplier B saves more',
@@ -122,6 +123,7 @@ export const PAGE_STRINGS = {
     saveFavoritesLabel: 'Save to favorites',
     gridViewLabel: 'Grid view',
     listViewLabel: 'List view',
+    viewModeAriaLabel: 'Toggle between grid and list view',
     taxNotice: 'Includes estimated local GST',
     bestDealLabel: 'Best Deal:',
     winsLabel: 'wins',
@@ -287,12 +289,15 @@ export const PAGE_STRINGS = {
     headings: {
       platform: 'Platform',
       supportLegal: 'Support & Legal',
+      developer: 'Developer',
     },
     links: {
       searchStays: 'Search Stays',
       myReservations: 'My Bookings',
       privacy: 'Privacy Policy',
       terms: 'Terms of Service',
+      apiDocs: 'API Documentation',
+      sourceCode: 'Source Code',
     },
   },
 };

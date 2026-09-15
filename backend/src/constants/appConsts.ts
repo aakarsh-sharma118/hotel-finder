@@ -1,7 +1,16 @@
 /**
- * Backend constants and configuration.
+ * @fileoverview Backend constants, regular expressions, and configuration values.
+ * Centralized constant definitions used across controllers, routes, and workflows.
+ *
+ * © 2026 Aakarsh Sharma. All rights reserved.
+ *
+ * @module constants/appConsts
  */
 
+import { PORT, ALLOWED_ORIGINS } from '../config/env';
+import { getHotelsByCity, MockHotel } from '../mockData/hotels';
+
+// Hotel catalog item structure shared across backend and frontend
 export interface HotelCatalogItem {
   hotelId: string;
   name: string;
@@ -14,44 +23,66 @@ export interface HotelCatalogItem {
   savings: number;
   image: string;
   amenities: string[];
+  rating?: number;
+  reviewsCount?: number;
 }
 
+// Server configuration settings and network constraints
 export const SERVER_CONFIG = {
-  DEFAULT_PORT: 3001,
-  RATE_LIMIT_WINDOW_MS: 60 * 1000, // 1 minute
-  MAX_REQUESTS_PER_WINDOW: 150, // 150 requests per minute per IP
-  DEFAULT_ACTIVITY_TIMEOUT_MS: 5000, // 5 second SLA limit
+  // Default HTTP port
+  DEFAULT_PORT: PORT,
+  // Time window for rate limiting in milliseconds (1 minute)
+  RATE_LIMIT_WINDOW_MS: 60 * 1000,
+  // Maximum requests permitted per IP inside the rate limit window
+  MAX_REQUESTS_PER_WINDOW: 150,
+  // Activity timeout SLA limit in milliseconds (5 seconds)
+  DEFAULT_ACTIVITY_TIMEOUT_MS: 5000,
+  // Connection timeout when reaching Temporal server
   TEMPORAL_CONNECT_TIMEOUT: '1500ms' as const,
+  // Default local Temporal server address
   DEFAULT_TEMPORAL_ADDRESS: '127.0.0.1:7233',
+  // Maximum retry attempts when connecting to Temporal
   MAX_TEMPORAL_CONNECT_ATTEMPTS: 5,
-  TASK_QUEUE_NAME: 'hotel-rate-comparator',
-  CORS_ALLOWED_ORIGINS: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL.replace(/\/$/, '')] : []),
-    ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(s => s.trim()) : []),
-  ],
+  // Task queue name for rate comparator workflows
+  TASK_QUEUE_NAME: 'hotel-finder',
+  // Permitted origins for CORS middleware
+  CORS_ALLOWED_ORIGINS: ALLOWED_ORIGINS,
+  // Permitted HTTP methods
   CORS_ALLOWED_METHODS: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] as string[],
+  // Permitted request headers
   CORS_ALLOWED_HEADERS: ['Content-Type', 'Authorization'],
 };
 
+// API catalog metadata describing all available endpoints
 export const API_CATALOG_DATA = {
-  service: 'Hotel Rate Comparator API',
+  service: 'Hotel Finder API',
   version: 'v1',
-  description: 'Enterprise hotel rate aggregation and verified reservations engine',
+  description: 'Hotel rate aggregation and verified reservations engine',
+  author: 'Aakarsh Sharma',
   endpoints: {
-    catalog: 'GET /api/v1/hotels/catalog?city=...',
+    swaggerDocs: 'GET /api-docs',
+    swaggerJson: 'GET /api-docs.json',
+    health: 'GET /health',
+    catalog: 'GET /api/v1/hotels/catalog?city=...&page=...&limit=...&minPrice=...&maxPrice=...',
+    createHotel: 'POST /api/v1/hotels',
+    updateHotel: 'PUT /api/v1/hotels/:hotelId',
+    deleteHotel: 'DELETE /api/v1/hotels/:hotelId',
     searchHotelsQuery: 'GET /api/v1/hotels/search?city=...&checkIn=...&checkOut=...',
     searchHotelsBody: 'POST /api/v1/hotels/search',
     searchStatus: 'GET /api/v1/hotels/search/:workflowId',
     cancelSearch: 'POST /api/v1/hotels/search/:workflowId/cancel',
-    listBookings: 'GET /api/v1/bookings',
+    listBookings: 'GET /api/v1/bookings?page=...&limit=...',
+    getBooking: 'GET /api/v1/bookings/:bookingId',
     createBooking: 'POST /api/v1/bookings',
+    updateBooking: 'PUT /api/v1/bookings/:bookingId',
     cancelBooking: 'DELETE /api/v1/bookings/:bookingId',
     resetState: 'POST /api/v1/admin/reset-mock-state',
+    supplierA: 'GET /supplierA/hotels?city=...',
+    supplierB: 'GET /supplierB/hotels?city=...',
   },
 };
 
+// Standardized response and error messages
 export const BACKEND_MESSAGES = {
   rateLimitExceeded: 'Too many requests. Please try again later.',
   missingParameters:
@@ -67,49 +98,59 @@ export const BACKEND_MESSAGES = {
   bookingNotFound: (id: string) => `Reservation ${id} not found`,
 };
 
+// Regular expression patterns for input validation and sanitization
 export const VALIDATION_REGEX = {
+  // Destination city validation pattern
   city: /^[a-zA-Z\s,.-]{2,80}$/,
+  // Guest name validation pattern
   name: /^[a-zA-Z\u00C0-\u024F\s.'-]{2,60}$/,
+  // Standard email format validation pattern
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  // Phone number format validation pattern
   phone: /^[0-9+\s()-]{7,20}$/,
+  // YYYY-MM-DD date format validation pattern
   date: /^\d{4}-\d{2}-\d{2}$/,
 };
 
-const HOTEL_IMAGES = [
-  'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1549294413-26f195200c16?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1596436889106-be35e843f974?auto=format&fit=crop&w=800&q=80',
-];
-
+// List of recognized cities across Indian destinations
 export const RECOGNIZED_CITIES = [
+  'meerut',
   'goa',
   'mumbai',
   'delhi',
-  'bangalore',
+  'new delhi',
   'bengaluru',
+  'bangalore',
   'jaipur',
-  'agra',
   'udaipur',
+  'agra',
   'manali',
   'kochi',
+  'cochin',
   'kerala',
+  'varanasi',
+  'amritsar',
+  'kolkata',
+  'chennai',
+  'hyderabad',
+  'pune',
+  'chandigarh',
+  'shimla',
+  'rishikesh',
+  'lucknow',
   'paris',
   'london',
-  'tokyo',
   'new york',
-  'newyork',
+  'tokyo',
   'dubai',
 ];
 
+/**
+ * Check if a city is recognized by the system.
+ *
+ * @param city - City name string
+ * @returns True if city is in recognized list
+ */
 export function isCityRecognized(city: string): boolean {
   if (!city) return false;
   const lower = city.trim().toLowerCase();
@@ -117,133 +158,12 @@ export function isCityRecognized(city: string): boolean {
 }
 
 /**
- * Hotel catalog templates.
- */
-export const HOTEL_CATALOG_TEMPLATES = [
-  {
-    nameSuffix: 'Grand Palace & Spa',
-    stars: 5,
-    locationSuffix: 'Waterfront Promenade (400m to beach)',
-    baseRateA: 2499,
-    baseRateB: 2199,
-    cheaperSupplier: 'Supplier B' as const,
-    amenities: ['Free High-Speed WiFi', 'Complimentary Breakfast', 'Free Cancellation'],
-    imageIndex: 0,
-  },
-  {
-    nameSuffix: 'Premier Business Suites',
-    stars: 4,
-    locationSuffix: 'City Center Business District',
-    baseRateA: 1850,
-    baseRateB: 1990,
-    cheaperSupplier: 'Supplier A' as const,
-    amenities: ['Spa & Wellness Center', 'City Skyline View', 'Airport Transfer'],
-    imageIndex: 1,
-  },
-  {
-    nameSuffix: 'Heritage Boutique Hotel',
-    stars: 4,
-    locationSuffix: 'Historical Old Quarter',
-    baseRateA: 2350,
-    baseRateB: 2150,
-    cheaperSupplier: 'Supplier B' as const,
-    amenities: ['Infinity Pool', '24h Room Service', 'Free Cancellation'],
-    imageIndex: 2,
-  },
-  {
-    nameSuffix: 'Royal Waterfront Haveli',
-    stars: 5,
-    locationSuffix: 'Lakeside Cultural Enclave',
-    baseRateA: 2799,
-    baseRateB: 3050,
-    cheaperSupplier: 'Supplier A' as const,
-    amenities: ['Ayurvedic Spa', 'Infinity Pool', 'Complimentary Breakfast'],
-    imageIndex: 3,
-  },
-  {
-    nameSuffix: 'Residency Garden Suites',
-    stars: 3,
-    locationSuffix: 'Green Valley Transit Corridor',
-    baseRateA: 1699,
-    baseRateB: 1820,
-    cheaperSupplier: 'Supplier A' as const,
-    amenities: ['Free High-Speed WiFi', 'Fitness Center', 'Free Cancellation'],
-    imageIndex: 4,
-  },
-  {
-    nameSuffix: 'Plaza Executive Resort',
-    stars: 4,
-    locationSuffix: 'Airport Expressway Hub',
-    baseRateA: 2950,
-    baseRateB: 2650,
-    cheaperSupplier: 'Supplier B' as const,
-    amenities: ['Airport Transfer', 'Executive Lounge', 'Complimentary Breakfast'],
-    imageIndex: 5,
-  },
-  {
-    nameSuffix: 'The Oberoi View Retreat',
-    stars: 5,
-    locationSuffix: 'Hilltop Scenic Ridge',
-    baseRateA: 3450,
-    baseRateB: 3180,
-    cheaperSupplier: 'Supplier B' as const,
-    amenities: ['Mountain View', 'Infinity Pool', 'Complimentary Breakfast'],
-    imageIndex: 6,
-  },
-  {
-    nameSuffix: 'Taj Legacy Court',
-    stars: 5,
-    locationSuffix: 'Royal Botanical Gardens',
-    baseRateA: 3890,
-    baseRateB: 4120,
-    cheaperSupplier: 'Supplier A' as const,
-    amenities: ['Butler Service', 'Spa & Wellness Center', 'Fine Dining'],
-    imageIndex: 7,
-  },
-  {
-    nameSuffix: 'Seaside Luxury Villas',
-    stars: 5,
-    locationSuffix: 'Private Golden Sands Bay',
-    baseRateA: 2850,
-    baseRateB: 2690,
-    cheaperSupplier: 'Supplier B' as const,
-    amenities: ['Private Beach Access', 'Free Cancellation', 'Ocean View'],
-    imageIndex: 8,
-  },
-  {
-    nameSuffix: 'Urban Oasis Hotel',
-    stars: 4,
-    locationSuffix: 'Metro Downtown Hub',
-    baseRateA: 1750,
-    baseRateB: 1890,
-    cheaperSupplier: 'Supplier A' as const,
-    amenities: ['Fitness Center', 'Free High-Speed WiFi', 'City Skyline View'],
-    imageIndex: 9,
-  },
-  {
-    nameSuffix: 'Sapphire Boutique Inn',
-    stars: 3,
-    locationSuffix: 'Art & Heritage Boulevard',
-    baseRateA: 1420,
-    baseRateB: 1540,
-    cheaperSupplier: 'Supplier A' as const,
-    amenities: ['Artisan Cafe', 'Free High-Speed WiFi', 'Free Cancellation'],
-    imageIndex: 10,
-  },
-  {
-    nameSuffix: 'Crown Imperial Hotel',
-    stars: 4,
-    locationSuffix: 'Diplomatic Enclave',
-    baseRateA: 2620,
-    baseRateB: 2480,
-    cheaperSupplier: 'Supplier B' as const,
-    amenities: ['Executive Lounge', 'Airport Transfer', 'Complimentary Breakfast'],
-    imageIndex: 11,
-  },
-];
-
-/**
- * Hotel catalog by destination.
+ * Retrieve hotels for destination city with price modifiers.
+ * Compatible with existing workflow and router implementations.
+ *
+ * @param city - Destination city name
+ * @param priceModifier - Optional price overrides from search workflow
+ * @returns Array of hotel catalog items
  */
 export function getBackendHotelsForCity(
   city: string,
@@ -252,7 +172,7 @@ export function getBackendHotelsForCity(
   const normalizedCity = city.trim();
   const lowerCity = normalizedCity.toLowerCase();
 
-  // Return empty if unknown or test empty destination
+  // Return empty list if explicitly unknown or test empty destination
   if (
     lowerCity === 'atlantiscity' ||
     lowerCity === 'emptycity' ||
@@ -262,41 +182,25 @@ export function getBackendHotelsForCity(
     return [];
   }
 
-  const effectiveCity = normalizedCity || 'Goa';
-
-  return HOTEL_CATALOG_TEMPLATES.map((tmpl, idx) => {
-    let rateA = tmpl.baseRateA;
-    let rateB = tmpl.baseRateB;
-    let cheaperSupplier = tmpl.cheaperSupplier;
-
-    // If search comparison result provided overrides for top winning hotel
-    if (idx === 0 && priceModifier?.bestPrice) {
-      const best = priceModifier.bestPrice < 500 ? Math.round(priceModifier.bestPrice * 6.5) : priceModifier.bestPrice;
-      const isA = priceModifier.isSupplierACheaper ?? true;
-      cheaperSupplier = isA ? 'Supplier A' : 'Supplier B';
-      rateA = isA ? best : Math.round(best * 1.09);
-      rateB = isA ? Math.round(best * 1.09) : best;
-    }
-
-    const price = Math.min(rateA, rateB);
-    const savings = Math.abs(rateA - rateB);
-    const hotelName =
-      idx === 0 && priceModifier?.winningHotelName
-        ? priceModifier.winningHotelName
-        : `${effectiveCity} ${tmpl.nameSuffix}`;
-
-    return {
-      hotelId: `htl-${effectiveCity.toLowerCase().replace(/\s+/g, '-')}-${idx + 1}`,
-      name: hotelName,
-      stars: tmpl.stars,
-      location: `${effectiveCity} - ${tmpl.locationSuffix}`,
-      rateA,
-      rateB,
-      cheaperSupplier,
-      price,
-      savings,
-      image: HOTEL_IMAGES[tmpl.imageIndex % HOTEL_IMAGES.length],
-      amenities: tmpl.amenities,
-    };
+  // Retrieve matching hotels from mock database
+  const result = getHotelsByCity(normalizedCity, {
+    limit: 50,
+    priceModifier,
   });
+
+  return result.hotels.map((h: MockHotel) => ({
+    hotelId: h.hotelId,
+    name: h.name,
+    stars: h.stars,
+    location: h.location,
+    rateA: h.rateA,
+    rateB: h.rateB,
+    cheaperSupplier: h.cheaperSupplier,
+    price: h.price,
+    savings: h.savings,
+    image: h.image,
+    amenities: h.amenities,
+    rating: h.rating,
+    reviewsCount: h.reviewsCount,
+  }));
 }

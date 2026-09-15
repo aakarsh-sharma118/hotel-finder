@@ -34,7 +34,7 @@ describe('Standardized REST API Endpoints Tests', () => {
     });
     expect(res.status).toBe(200);
     expect(res.data.status).toBe('ONLINE');
-    expect(res.data.service).toBe('Hotel Rate Comparator API');
+    expect(res.data.service).toBe('Hotel Finder API');
   });
 
   it('GET /api/v1 returns catalog of available REST endpoints', async () => {
@@ -165,4 +165,59 @@ describe('Standardized REST API Endpoints Tests', () => {
     const listRes = await axios.get(`${baseUrl}/api/v1/bookings`);
     expect(listRes.data.count).toBe(0);
   });
+
+  it('GET /api-docs serves Swagger UI documentation', async () => {
+    const res = await axios.get(`${baseUrl}/api-docs/`);
+    expect(res.status).toBe(200);
+    expect(res.data).toContain('swagger-ui');
+  });
+
+  it('GET /api-docs.json serves valid OpenAPI 3.0 specification', async () => {
+    const res = await axios.get(`${baseUrl}/api-docs.json`);
+    expect(res.status).toBe(200);
+    expect(res.data.openapi).toBe('3.0.0');
+    expect(res.data.info.title).toBe('Hotel Finder API');
+    expect(res.data.paths).toHaveProperty('/api/v1/hotels/catalog');
+    expect(res.data.paths).toHaveProperty('/api/v1/bookings');
+  });
+
+  it('GET /api/v1/hotels/catalog supports price filtering and pagination for Meerut', async () => {
+    const res = await axios.get(`${baseUrl}/api/v1/hotels/catalog`, {
+      params: { city: 'Meerut', page: 1, limit: 5, minPrice: 2000, maxPrice: 3500 },
+    });
+    expect(res.status).toBe(200);
+    expect(res.data.city).toBe('Meerut');
+    expect(res.data.page).toBe(1);
+    expect(res.data.limit).toBe(5);
+    expect(res.data.hotels.length).toBeGreaterThan(0);
+    expect(res.data.hotels[0].price).toBeGreaterThanOrEqual(2000);
+    expect(res.data.hotels[0].price).toBeLessThanOrEqual(3500);
+  });
+
+  it('GET /api/v1/hotels/destinations returns dynamic destination cities including Meerut', async () => {
+    const res = await axios.get(`${baseUrl}/api/v1/hotels/destinations`);
+    expect(res.status).toBe(200);
+    expect(res.data.destinations).toBeDefined();
+    expect(res.data.destinations.length).toBeGreaterThanOrEqual(10);
+    const meerut = res.data.destinations.find((d: any) => d.city === 'Meerut');
+    expect(meerut).toBeDefined();
+    expect(meerut.hotelCount).toBeGreaterThan(0);
+    expect(meerut.minPrice).toBeGreaterThan(0);
+  });
+
+  it('GET /api/v1/destinations/validate accurately validates cities', async () => {
+    const validRes = await axios.get(`${baseUrl}/api/v1/destinations/validate`, {
+      params: { city: 'meerut' },
+    });
+    expect(validRes.status).toBe(200);
+    expect(validRes.data.valid).toBe(true);
+    expect(validRes.data.normalizedCity).toBe('Meerut');
+
+    const invalidRes = await axios.get(`${baseUrl}/api/v1/destinations/validate`, {
+      params: { city: 'NonExistentCityXYZ' },
+    });
+    expect(invalidRes.status).toBe(200);
+    expect(invalidRes.data.valid).toBe(false);
+  });
 });
+

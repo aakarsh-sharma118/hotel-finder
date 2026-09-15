@@ -1,13 +1,32 @@
+/**
+ * @fileoverview Mock Supplier B HTTP router.
+ * Simulates external hotel rate supplier with fault injection features (delay, errors, abort).
+ *
+ * © 2026 Aakarsh Sharma. All rights reserved.
+ *
+ * @module mockSuppliers/supplierB
+ */
+
 import { Router, Request, Response } from 'express';
 import { HotelOffer } from './supplierA';
+import { isCityRecognized } from '../constants/appConsts';
+import { getSupplierBHotels } from '../mockData/suppliers';
 
-// Failure counter
+// In-memory counter tracking transient failures per test key
 const failCountersB: Record<string, number> = {};
 
+/**
+ * Reset fail counter for a given test key in Supplier B.
+ *
+ * @param key - Identifier for test case counter
+ */
 export function resetSupplierBFailCounter(key: string = 'default'): void {
   delete failCountersB[key];
 }
 
+/**
+ * Clear all registered fail counters for Supplier B.
+ */
 export function clearAllSupplierBFailCounters(): void {
   for (const key in failCountersB) {
     delete failCountersB[key];
@@ -16,61 +35,11 @@ export function clearAllSupplierBFailCounters(): void {
 
 export const supplierBRouter = Router();
 
-import { isCityRecognized } from '../constants/appConsts';
-
-// Default hotels
-export const defaultSupplierBHotels: Record<string, HotelOffer[]> = {
-  goa: [
-    { hotelId: 'h-goa-101', name: 'Goa Grand Palace & Spa', price: 395, city: 'Goa' },
-    { hotelId: 'h-goa-102', name: 'Goa Premier Business Suites', price: 275, city: 'Goa' },
-    { hotelId: 'h-goa-103', name: 'Goa Heritage Boutique Hotel', price: 365, city: 'Goa' },
-  ],
-  mumbai: [
-    { hotelId: 'h-mum-101', name: 'Mumbai Grand Palace & Spa', price: 365, city: 'Mumbai' },
-    { hotelId: 'h-mum-102', name: 'Mumbai Marine Suites', price: 325, city: 'Mumbai' },
-  ],
-  delhi: [
-    { hotelId: 'h-del-101', name: 'Delhi Imperial Court', price: 355, city: 'Delhi' },
-    { hotelId: 'h-del-102', name: 'Delhi Heritage Haveli', price: 280, city: 'Delhi' },
-  ],
-  jaipur: [
-    { hotelId: 'h-jai-101', name: 'Jaipur Palace & Spa', price: 310, city: 'Jaipur' },
-    { hotelId: 'h-jai-102', name: 'Jaipur Royal Fort Inn', price: 285, city: 'Jaipur' },
-  ],
-  bengaluru: [
-    { hotelId: 'h-blr-101', name: 'Bengaluru Silicon Suites', price: 305, city: 'Bengaluru' },
-    { hotelId: 'h-blr-102', name: 'Bengaluru Garden Palace', price: 315, city: 'Bengaluru' },
-  ],
-  bangalore: [
-    { hotelId: 'h-blr-101', name: 'Bengaluru Silicon Suites', price: 305, city: 'Bangalore' },
-    { hotelId: 'h-blr-102', name: 'Bengaluru Garden Palace', price: 315, city: 'Bangalore' },
-  ],
-  paris: [
-    { hotelId: 'h-101', name: 'Le Grand Plaza Paris', price: 170, city: 'Paris' },
-    { hotelId: 'h-102', name: 'Seine Riverside Hotel', price: 255, city: 'Paris' },
-    { hotelId: 'h-103', name: 'Montmartre Boutique Suites', price: 145, city: 'Paris' },
-  ],
-  newyork: [
-    { hotelId: 'h-201', name: 'Manhattan Grand Central', price: 275, city: 'New York' },
-    { hotelId: 'h-202', name: 'Broadway Skyline Hotel', price: 280, city: 'New York' },
-  ],
-  tokyo: [
-    { hotelId: 'h-301', name: 'Shinjuku Imperial Tower', price: 195, city: 'Tokyo' },
-    { hotelId: 'h-302', name: 'Shibuya Neon Suites', price: 185, city: 'Tokyo' },
-  ],
-  london: [
-    { hotelId: 'h-401', name: 'The Westminster Palace Inn', price: 215, city: 'London' },
-    { hotelId: 'h-402', name: 'Covent Garden Luxury Stay', price: 260, city: 'London' },
-  ],
-  dubai: [
-    { hotelId: 'h-dxb-101', name: 'Dubai Marina Palace', price: 410, city: 'Dubai' },
-    { hotelId: 'h-dxb-102', name: 'Dubai Palm Luxury Resort', price: 430, city: 'Dubai' },
-  ],
-};
-
+// Handle GET /hotels request for Supplier B
 supplierBRouter.get('/hotels', async (req: Request, res: Response): Promise<void> => {
+  // Extract query parameters for city and fault simulations
   const {
-    city = 'paris',
+    city = 'Meerut',
     delay,
     status,
     empty,
@@ -80,13 +49,13 @@ supplierBRouter.get('/hotels', async (req: Request, res: Response): Promise<void
     priceOverride,
   } = req.query;
 
-  // Network abort
+  // Simulate network abort by immediately closing the socket connection
   if (abort === 'true') {
     req.socket.destroy();
     return;
   }
 
-  // Delay simulation
+  // Simulate latency delay if specified in query
   if (delay) {
     const delayMs = parseInt(delay as string, 10);
     if (!isNaN(delayMs) && delayMs > 0) {
@@ -94,7 +63,7 @@ supplierBRouter.get('/hotels', async (req: Request, res: Response): Promise<void
     }
   }
 
-  // Error status simulation
+  // Simulate HTTP status code failure (e.g. 500, 502, 504)
   if (status) {
     const statusCode = parseInt(status as string, 10);
     if (!isNaN(statusCode) && statusCode >= 400) {
@@ -106,7 +75,7 @@ supplierBRouter.get('/hotels', async (req: Request, res: Response): Promise<void
     }
   }
 
-  // Transient failure simulation
+  // Simulate transient failure sequence before eventual success
   if (failCount !== undefined) {
     const maxFailures = parseInt(failCount as string, 10);
     const key = (failKey as string) || 'default';
@@ -121,37 +90,35 @@ supplierBRouter.get('/hotels', async (req: Request, res: Response): Promise<void
       });
       return;
     }
+    // Clean up counter once the required failure count has passed
     delete failCountersB[key];
   }
 
-  // Empty response simulation
+  // Simulate empty inventory response
   if (empty === 'true') {
     res.status(200).json([]);
     return;
   }
 
-  // Normal response
-  const cityStr = (city as string) || 'paris';
-  const cityKey = cityStr.toLowerCase().replace(/\s+/g, '');
-  let hotels = defaultSupplierBHotels[cityKey];
+  // Normalize city input
+  const cityStr = String(city || 'Meerut').trim();
+  const overridePrice = priceOverride !== undefined ? Number(priceOverride) : undefined;
 
-  if (!hotels) {
+  // Retrieve realistic hotel offers from mock data
+  let hotels: HotelOffer[] = getSupplierBHotels(cityStr, overridePrice);
+
+  // If no hotels found in mock data, check if city is recognized
+  if (hotels.length === 0) {
     if (isCityRecognized(cityStr)) {
       hotels = [
-        { hotelId: `h-${cityKey}-b1`, name: `${cityStr} Grand Palace & Spa`, price: 395, city: cityStr },
-        { hotelId: `h-${cityKey}-b2`, name: `${cityStr} Premier Business Suites`, price: 275, city: cityStr },
+        { hotelId: `h-${cityStr.toLowerCase()}-b1`, name: `${cityStr} Grand Palace & Spa`, price: overridePrice || 2600, city: cityStr },
+        { hotelId: `h-${cityStr.toLowerCase()}-b2`, name: `${cityStr} Premier Business Suites`, price: overridePrice || 2300, city: cityStr },
       ];
     } else {
       hotels = [];
     }
   }
 
-  const responseData: HotelOffer[] = hotels.map((h) => {
-    if (priceOverride !== undefined) {
-      return { ...h, price: Number(priceOverride) };
-    }
-    return { ...h };
-  });
-
-  res.status(200).json(responseData);
+  // Return realistic hotel offers with HTTP 200 OK
+  res.status(200).json(hotels);
 });

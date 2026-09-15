@@ -1,5 +1,14 @@
+/**
+ * @fileoverview Global Zustand state store for client-only UI state and preferences.
+ * Manages theme, search input values, sorting, filtering, and modal dialogs.
+ *
+ * © 2026 Aakarsh Sharma. All rights reserved.
+ *
+ * @module store/useHotelStore
+ */
+
 import { create } from 'zustand';
-import { HotelOffer, SearchWorkflowResult, HotelCardData } from '../api/types';
+import { HotelOffer, SearchWorkflowResult, HotelCardData } from '../types';
 import { hotelApi } from '../api/hotelApi';
 import {
   STORAGE_KEYS,
@@ -11,8 +20,10 @@ import {
   generateBookingReference,
   generateBookingId,
   calculateTaxAndTotal,
+  decodeHtmlEntities,
 } from '../utils/utilityManager';
 import { PAGE_STRINGS } from '../constants/pageStrings';
+import { getAppBasePath } from '../utils/basePath';
 
 export type SortOption = 'cheapest' | 'stars' | 'name' | 'favorites';
 export type AppTab = 'search' | 'bookings';
@@ -69,6 +80,9 @@ interface HotelStoreState {
   sortBy: SortOption;
   supplierFilter: SupplierFilter;
   amenityFilter: string | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  currentPage: number;
   favorites: Record<string, boolean>;
   bookingHotel: HotelOffer | null;
   isBookingSuccess: boolean;
@@ -95,10 +109,13 @@ interface HotelStoreState {
   setSortBy: (sort: SortOption) => void;
   setSupplierFilter: (filter: SupplierFilter) => void;
   setAmenityFilter: (amenity: string | null) => void;
+  setMinPrice: (minPrice: number | null) => void;
+  setMaxPrice: (maxPrice: number | null) => void;
+  setCurrentPage: (page: number) => void;
   toggleFavorite: (hotelId: string) => void;
   openBookingModal: (hotel: HotelOffer) => void;
   closeBookingModal: () => void;
-  confirmBookingWithDetails: (details: { guestName: string; guestEmail: string }) => void;
+  confirmBookingWithDetails: (details: { guestName: string; guestEmail: string }) => ConfirmedBooking | null;
   cancelBooking: (bookingId: string) => void;
   selectDestination: (city: string) => void;
   resetForm: () => void;
@@ -115,10 +132,15 @@ const savedFavorites = loadJsonFromStorage<Record<string, boolean>>(
   {}
 );
 
-const savedBookings = loadJsonFromStorage<ConfirmedBooking[]>(
+const rawBookings = loadJsonFromStorage<ConfirmedBooking[]>(
   STORAGE_KEYS.BOOKINGS,
   []
 );
+const savedBookings = rawBookings.map((b) => ({
+  ...b,
+  hotelName: decodeHtmlEntities(b.hotelName),
+  location: decodeHtmlEntities(b.location),
+}));
 
 function applyThemeToDom(theme: 'light' | 'dark') {
   if (typeof window === 'undefined') return;
@@ -167,6 +189,9 @@ export const useHotelStore = create<HotelStoreState>((set, get) => ({
   sortBy: 'cheapest',
   supplierFilter: 'ALL',
   amenityFilter: null,
+  minPrice: null,
+  maxPrice: null,
+  currentPage: 1,
   favorites: savedFavorites,
   bookingHotel: null,
   isBookingSuccess: false,
@@ -192,13 +217,13 @@ export const useHotelStore = create<HotelStoreState>((set, get) => ({
   setBackendHotels: (backendHotels) => set({ backendHotels }),
 
   fetchCatalogForCity: async (city) => {
-    const targetCity = city.trim() || 'Goa';
+    // Allow empty destination string to load all verified hotels across India
+    const targetCity = city.trim();
     set({ isLoadingCatalog: true });
     try {
-      const hotels = await hotelApi.getHotelCatalog(targetCity);
-      set({ backendHotels: hotels, isLoadingCatalog: false });
-    } catch (err) {
-      console.warn('[Store] Could not load hotel catalog from backend:', err);
+      const res = await hotelApi.getHotelCatalog(targetCity, { limit: 200 });
+      set({ backendHotels: res.hotels || [], isLoadingCatalog: false });
+    } catch {
       set({ isLoadingCatalog: false });
     }
   },
@@ -207,6 +232,9 @@ export const useHotelStore = create<HotelStoreState>((set, get) => ({
   setSortBy: (sortBy) => set({ sortBy }),
   setSupplierFilter: (supplierFilter) => set({ supplierFilter }),
   setAmenityFilter: (amenityFilter) => set({ amenityFilter }),
+  setMinPrice: (minPrice) => set({ minPrice, currentPage: 1 }),
+  setMaxPrice: (maxPrice) => set({ maxPrice, currentPage: 1 }),
+  setCurrentPage: (currentPage) => set({ currentPage }),
 
   toggleFavorite: (hotelId) => {
     const updatedFavorites = {
@@ -224,7 +252,7 @@ export const useHotelStore = create<HotelStoreState>((set, get) => ({
 
   confirmBookingWithDetails: ({ guestName, guestEmail }) => {
     const state = get();
-    if (!state.bookingHotel) return;
+    if (!state.bookingHotel) return null;
 
     const { total: totalPrice } = calculateTaxAndTotal(state.bookingHotel.price, GST_TAX_RATE);
     const refCode = generateBookingReference();
@@ -233,11 +261,11 @@ export const useHotelStore = create<HotelStoreState>((set, get) => ({
       id: generateBookingId(),
       referenceCode: refCode,
       hotelId: state.bookingHotel.hotelId,
-      hotelName: state.bookingHotel.name,
-      location: state.bookingHotel.location || `${state.city || 'Goa'} - ${PAGE_STRINGS.common.defaultLocationSuffix}`,
-      city: state.city || 'Goa',
-      checkIn: state.checkIn || '2026-10-12',
-      checkOut: state.checkOut || '2026-10-15',
+      hotelName: decodeHtmlEntities(state.bookingHotel.name),
+      location: decodeHtmlEntities(state.bookingHotel.location || `${state.city || 'Meerut'} - ${PAGE_STRINGS.common.defaultLocationSuffix}`),
+      city: state.city || 'Meerut',
+      checkIn: state.checkIn || '2026-10-10',
+      checkOut: state.checkOut || '2026-10-14',
       guests: state.guests || '2 Adults',
       nightlyRate: state.bookingHotel.price,
       totalPrice,
@@ -256,6 +284,7 @@ export const useHotelStore = create<HotelStoreState>((set, get) => ({
       bookings: updatedBookings,
     });
     saveJsonToStorage(STORAGE_KEYS.BOOKINGS, updatedBookings);
+    return newBooking;
   },
 
   cancelBooking: (bookingId) => {
@@ -272,6 +301,7 @@ export const useHotelStore = create<HotelStoreState>((set, get) => ({
       city: targetCity,
       activeTab: 'search',
       lastSearchResult: null,
+      currentPage: 1,
     });
     get().fetchCatalogForCity(targetCity);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -285,14 +315,17 @@ export const useHotelStore = create<HotelStoreState>((set, get) => ({
       guests: '',
       supplierFilter: 'ALL',
       amenityFilter: null,
+      minPrice: null,
+      maxPrice: null,
+      currentPage: 1,
       cancelStatus: null,
       lastSearchResult: null,
     });
     if (typeof window !== 'undefined') {
-      const isProd = Boolean((import.meta as any).env?.PROD);
-      const basePath = isProd && window.location.pathname.startsWith('/hotel-rate-comparator') ? '/hotel-rate-comparator/' : '/';
-      window.history.pushState({}, '', basePath);
+      // Use the dynamic base path so renaming the repo only needs an env var change
+      const basePath = getAppBasePath();
+      window.history.pushState({}, '', basePath ? `${basePath}/` : '/');
     }
-    get().fetchCatalogForCity('Goa');
+    get().fetchCatalogForCity('Meerut');
   },
 }));

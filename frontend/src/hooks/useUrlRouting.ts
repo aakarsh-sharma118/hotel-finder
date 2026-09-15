@@ -1,17 +1,12 @@
 import { useEffect, useCallback } from 'react';
 import { useHotelStore, AppTab } from '../store/useHotelStore';
-import { SearchHotelsParams } from '../api/types';
+import { SearchHotelsParams } from '../types';
 import { sanitizeInput, VALIDATION_REGEX } from '../constants/validation';
+// Centralised base-path helper — reads VITE_REPO_BASE env var
+import { getAppBasePath } from '../utils/basePath';
 
-// Base path for production
-export function getAppBasePath(): string {
-  if (typeof window === 'undefined') return '';
-  const isProd = Boolean((import.meta as any).env?.PROD || process.env.NODE_ENV === 'production');
-  if (isProd && window.location.pathname.startsWith('/hotel-rate-comparator')) {
-    return '/hotel-rate-comparator';
-  }
-  return '';
-}
+// Re-export so any legacy code that imported this from here still works
+export { getAppBasePath };
 
 interface UseUrlRoutingProps {
   onAutoSearch?: (params: SearchHotelsParams) => void;
@@ -31,9 +26,11 @@ export function useUrlRouting({ onAutoSearch }: UseUrlRoutingProps = {}) {
     setGuests,
   } = useHotelStore();
 
-  // Determine active tab
+  // Determine active tab from the current URL pathname
   const getTabFromPath = useCallback((pathname: string): AppTab => {
-    const cleanPath = pathname.replace(/^\/hotel-rate-comparator/, '').toLowerCase();
+    // Strip the repo base prefix before checking the path segment
+    const base = getAppBasePath();
+    const cleanPath = (base ? pathname.replace(base, '') : pathname).toLowerCase();
     if (cleanPath.startsWith('/bookings')) return 'bookings';
     return 'search';
   }, []);

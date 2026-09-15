@@ -112,7 +112,11 @@ export async function runWorker() {
   if (isShuttingDown) {
     console.log('[Worker] Gracefully shut down Temporal worker.');
   } else if (attemptCount >= maxAttempts) {
-    console.log('[Worker] Worker process exited cleanly after reaching max connection attempts.');
+    console.log('[Worker] Worker entered standby mode. Backend continues in direct fallback mode.');
+    // Keep process alive in standby so dev processes do not terminate
+    while (!isShuttingDown) {
+      await new Promise((resolve) => setTimeout(resolve, 60000));
+    }
   }
 }
 

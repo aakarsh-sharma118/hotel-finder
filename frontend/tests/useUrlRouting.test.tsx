@@ -64,20 +64,20 @@ describe('useUrlRouting Hook', () => {
 
   it('preserves subpath when navigating in production', () => {
     process.env.NODE_ENV = 'production';
-    window.history.pushState({}, '', '/hotel-rate-comparator/');
+    window.history.pushState({}, '', '/hotel-finder/');
     const { result } = renderHook(() => useUrlRouting());
 
     act(() => {
       result.current.navigateToTab('bookings');
     });
 
-    expect(window.location.pathname).toBe('/hotel-rate-comparator/bookings');
+    expect(window.location.pathname).toBe('/hotel-finder/bookings');
 
     act(() => {
       result.current.navigateToTab('search');
     });
 
-    expect(window.location.pathname).toBe('/hotel-rate-comparator/');
+    expect(window.location.pathname).toBe('/hotel-finder/');
     process.env.NODE_ENV = 'test';
   });
 

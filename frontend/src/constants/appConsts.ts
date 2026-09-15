@@ -24,6 +24,7 @@ export const STORAGE_KEYS = {
 export const GST_TAX_RATE = 0.12;
 
 export const DEFAULT_DESTINATIONS = [
+  'Meerut',
   'Goa',
   'Jaipur',
   'Mumbai',
@@ -33,6 +34,12 @@ export const DEFAULT_DESTINATIONS = [
   'Udaipur',
   'Manali',
   'Kochi',
+  'Varanasi',
+  'Amritsar',
+  'Kolkata',
+  'Chennai',
+  'Hyderabad',
+  'Pune',
   'Paris',
   'London',
   'Tokyo',
@@ -41,9 +48,11 @@ export const DEFAULT_DESTINATIONS = [
 ] as const;
 
 export const RECOGNIZED_DESTINATIONS = [
+  'meerut',
   'goa',
   'mumbai',
   'delhi',
+  'new delhi',
   'bangalore',
   'bengaluru',
   'jaipur',
@@ -52,6 +61,12 @@ export const RECOGNIZED_DESTINATIONS = [
   'manali',
   'kochi',
   'kerala',
+  'varanasi',
+  'amritsar',
+  'kolkata',
+  'chennai',
+  'hyderabad',
+  'pune',
   'paris',
   'london',
   'tokyo',

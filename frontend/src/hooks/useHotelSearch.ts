@@ -1,6 +1,15 @@
+/**
+ * @fileoverview Custom React hook managing hotel rate comparison search requests.
+ * Uses TanStack Query mutations to trigger workflow executions and cancellations.
+ *
+ * © 2026 Aakarsh Sharma. All rights reserved.
+ *
+ * @module hooks/useHotelSearch
+ */
+
 import { useMutation } from '@tanstack/react-query';
 import { hotelApi } from '../api/hotelApi';
-import { SearchHotelsParams, SearchWorkflowResult } from '../api/types';
+import { SearchHotelsParams, SearchWorkflowResult } from '../types';
 import { useHotelStore } from '../store/useHotelStore';
 import { PAGE_STRINGS } from '../constants/pageStrings';
 
@@ -11,26 +20,21 @@ export function useHotelSearch() {
     setCancelStatus,
   } = useHotelStore();
 
-  // Search mutation
+  // Mutation for executing rate comparison search
   const searchMutation = useMutation<SearchWorkflowResult, Error, SearchHotelsParams>({
     mutationFn: async (params: SearchHotelsParams) => {
       return await hotelApi.searchHotels(params);
     },
     onSuccess: (data) => {
+      // Store result in global state
       setLastSearchResult(data);
     },
-    onError: (error: any) => {
-      const message =
-        error.response?.data?.error ||
-        error.response?.data?.message ||
-        error.message ||
-        'Hotel search request failed';
-      console.error('Search error:', message);
+    onError: () => {
       setCancelStatus(null);
     },
   });
 
-  // Cancel mutation
+  // Mutation for cancelling an active workflow
   const cancelMutation = useMutation({
     mutationFn: async (workflowId: string) => {
       return await hotelApi.cancelSearch(workflowId);
@@ -44,6 +48,7 @@ export function useHotelSearch() {
     },
   });
 
+  // Function to initiate search with deterministic workflow ID
   const triggerSearch = async (params: SearchHotelsParams) => {
     const generatedWorkflowId = `hr-${params.city.toLowerCase()}-${Date.now().toString(36)}`;
     setActiveWorkflowId(generatedWorkflowId);
@@ -55,6 +60,7 @@ export function useHotelSearch() {
     });
   };
 
+  // Function to trigger workflow cancellation
   const triggerCancel = async (workflowId: string) => {
     return cancelMutation.mutateAsync(workflowId);
   };

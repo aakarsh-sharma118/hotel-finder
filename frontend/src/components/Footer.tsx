@@ -1,17 +1,19 @@
 import React from 'react';
+import { Code2, GitBranch } from 'lucide-react';
 import { useHotelStore } from '../store/useHotelStore';
 import { useUrlRouting } from '../hooks/useUrlRouting';
 import { PAGE_STRINGS } from '../constants/pageStrings';
 import BrandLogo from './common/BrandLogo';
 
 /**
- * Site footer component providing brand identity, navigation links,
- * legal modal triggers, and platform copyright notice.
+ * Site footer with brand info, navigation, legal modals,
+ * and a dedicated Developer section for API Docs and Source Code.
  */
 export const Footer: React.FC = () => {
   const { setPolicyModal } = useHotelStore();
   const { navigateToTab } = useUrlRouting();
 
+  // Navigate to a tab and scroll to top
   const handleNav = (tab: 'search' | 'bookings') => {
     navigateToTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -19,15 +21,16 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="corporate-footer" data-testid="footer">
-      {/* Navigation Columns */}
+      {/* Main link columns */}
       <div className="footer-columns-grid">
+        {/* Brand column */}
         <div className="footer-brand-col">
           <BrandLogo size="md" />
           <p className="footer-brand-desc">{PAGE_STRINGS.footer.about}</p>
           <span className="company-legal-name">{PAGE_STRINGS.footer.company}</span>
         </div>
 
-        {/* Platform Navigation */}
+        {/* Platform navigation */}
         <div className="footer-links-col">
           <h4>{PAGE_STRINGS.footer.headings.platform}</h4>
           <ul>
@@ -60,9 +63,40 @@ export const Footer: React.FC = () => {
             </li>
           </ul>
         </div>
+
+        {/* Developer — API Docs and Source Code */}
+        <div className="footer-links-col">
+          <h4>{PAGE_STRINGS.footer.headings.developer}</h4>
+          <ul>
+            <li>
+              {/* Opens Swagger UI in a new tab */}
+              <a
+                href="/api-docs"
+                target="_blank"
+                rel="noreferrer"
+                className="footer-dev-link"
+              >
+                <Code2 size={13} />
+                {PAGE_STRINGS.footer.links.apiDocs}
+              </a>
+            </li>
+            <li>
+              {/* Opens the GitHub repository in a new tab */}
+              <a
+                href="https://github.com/aakarsh-sharma118/hotel-finder"
+                target="_blank"
+                rel="noreferrer"
+                className="footer-dev-link"
+              >
+                <GitBranch size={13} />
+                {PAGE_STRINGS.footer.links.sourceCode}
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
 
-      {/* Copyright Bar */}
+      {/* Copyright bar */}
       <div className="footer-bottom-bar">
         <p className="footer-copyright-text">{PAGE_STRINGS.footer.copyright}</p>
       </div>

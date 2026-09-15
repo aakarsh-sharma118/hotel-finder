@@ -16,9 +16,12 @@
   "dependencies": {
     "@tanstack/react-query": "^5.102.8",
     "axios": "^1.7.9",
-    "hotel-rate-comparator-root": "file:..",
+    "date-fns": "^4.4.0",
+    "hotel-finder-root": "file:..",
     "lucide-react": "^0.475.0",
+    "prop-types": "^15.8.1",
     "react": "^18.3.1",
+    "react-day-picker": "^10.0.1",
     "react-dom": "^18.3.1",
     "react-loading-skeleton": "^3.5.0",
     "zustand": "^5.0.15"

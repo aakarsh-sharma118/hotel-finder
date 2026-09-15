@@ -78,9 +78,9 @@ describe('Frontend Utility Manager Tests', () => {
   });
 
   describe('ID and Reference Generators', () => {
-    it('generates uppercase alphanumeric booking references starting with HTL-', () => {
+    it('generates uppercase alphanumeric booking references with valid prefix', () => {
       const ref = generateBookingReference();
-      expect(ref).toMatch(/^HTL-[A-Z0-9]+$/);
+      expect(ref).toMatch(/^(REF|HTL)-[A-Z0-9-]+$/);
     });
 
     it('generates unique booking IDs', () => {

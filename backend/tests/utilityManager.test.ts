@@ -39,9 +39,9 @@ describe('Backend Utility Manager Tests', () => {
   });
 
   describe('ID and Reference Generators', () => {
-    it('generates booking reference with HTL- prefix', () => {
+    it('generates booking reference with valid prefix', () => {
       const ref = generateBookingReference();
-      expect(ref).toMatch(/^HTL-[A-Z0-9]+$/);
+      expect(ref).toMatch(/^(REF|HTL)-[A-Z0-9-]+$/);
     });
 
     it('generates CONF- booking ID', () => {

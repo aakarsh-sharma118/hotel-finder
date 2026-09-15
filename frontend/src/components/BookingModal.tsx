@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, Calendar, Users, ShieldCheck, MapPin } from 'lucide-react';
-import { useHotelStore } from '../store/useHotelStore';
+import { useHotelStore, ConfirmedBooking } from '../store/useHotelStore';
 import { PAGE_STRINGS, GST_TAX_RATE, VALIDATION_REGEX, VALIDATION_MESSAGES } from '../constants/appConsts';
-import { sanitizeInput, calculateTaxAndTotal, formatPriceINR } from '../utils/utilityManager';
+import { sanitizeInput, calculateTaxAndTotal, formatPriceINR, decodeHtmlEntities } from '../utils/utilityManager';
+import { useUrlRouting } from '../hooks/useUrlRouting';
 
 export const BookingModal: React.FC = () => {
   const {
@@ -11,16 +12,18 @@ export const BookingModal: React.FC = () => {
     isBookingSuccess,
     confirmBookingWithDetails,
     lastConfirmedBooking,
-    setActiveTab,
     checkIn,
     checkOut,
     guests,
   } = useHotelStore();
 
+  const { navigateToTab } = useUrlRouting();
+
   const [guestName, setGuestName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState<{ guestName?: string; guestEmail?: string; phone?: string }>({});
+  const [confirmedBookingRecord, setConfirmedBookingRecord] = useState<ConfirmedBooking | null>(null);
 
   if (!bookingHotel) return null;
 
@@ -56,14 +59,18 @@ export const BookingModal: React.FC = () => {
     }
 
     setErrors({});
-    confirmBookingWithDetails({ guestName: cleanName, guestEmail: cleanEmail });
+    const confirmed = confirmBookingWithDetails({ guestName: cleanName, guestEmail: cleanEmail });
+    if (confirmed) {
+      setConfirmedBookingRecord(confirmed);
+    }
   };
 
   const { tax, total } = calculateTaxAndTotal(bookingHotel.price, GST_TAX_RATE);
 
   const handleViewBookings = () => {
     closeBookingModal();
-    setActiveTab('bookings');
+    navigateToTab('bookings');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -82,10 +89,10 @@ export const BookingModal: React.FC = () => {
           <div>
             <div className="modal-header">
               <span className="modal-subtitle">{PAGE_STRINGS.bookingModal.subtitle}</span>
-              <h2 className="modal-title">{bookingHotel.name}</h2>
+              <h2 className="modal-title">{decodeHtmlEntities(bookingHotel.name)}</h2>
               <div className="modal-location">
                 <MapPin size={13} />
-                <span>{bookingHotel.location || PAGE_STRINGS.common.defaultLocation}</span>
+                <span>{decodeHtmlEntities(bookingHotel.location || PAGE_STRINGS.common.defaultLocation)}</span>
               </div>
             </div>
 
@@ -106,8 +113,9 @@ export const BookingModal: React.FC = () => {
 
             <form onSubmit={handleConfirm} className="modal-form" noValidate>
               <div className="form-row">
-                <label className="modal-label">{PAGE_STRINGS.bookingModal.guestNameLabel}</label>
+                <label htmlFor="booking-guest-name" className="modal-label">{PAGE_STRINGS.bookingModal.guestNameLabel}</label>
                 <input
+                  id="booking-guest-name"
                   type="text"
                   className={`modal-input ${errors.guestName ? 'is-invalid' : ''}`}
                   value={guestName}
@@ -123,8 +131,9 @@ export const BookingModal: React.FC = () => {
               </div>
 
               <div className="form-row">
-                <label className="modal-label">{PAGE_STRINGS.bookingModal.emailLabel}</label>
+                <label htmlFor="booking-guest-email" className="modal-label">{PAGE_STRINGS.bookingModal.emailLabel}</label>
                 <input
+                  id="booking-guest-email"
                   type="email"
                   className={`modal-input ${errors.guestEmail ? 'is-invalid' : ''}`}
                   value={guestEmail}
@@ -140,8 +149,9 @@ export const BookingModal: React.FC = () => {
               </div>
 
               <div className="form-row">
-                <label className="modal-label">{PAGE_STRINGS.bookingModal.phoneLabel}</label>
+                <label htmlFor="booking-guest-phone" className="modal-label">{PAGE_STRINGS.bookingModal.phoneLabel}</label>
                 <input
+                  id="booking-guest-phone"
                   type="tel"
                   className={`modal-input ${errors.phone ? 'is-invalid' : ''}`}
                   value={phone}
@@ -193,13 +203,13 @@ export const BookingModal: React.FC = () => {
             <h3>{PAGE_STRINGS.bookingModal.successTitle}</h3>
             <p className="success-desc">
               {PAGE_STRINGS.bookingModal.securedNotice(
-                bookingHotel.name,
+                decodeHtmlEntities(bookingHotel.name),
                 bookingHotel.supplier || 'Supplier B'
               )}
             </p>
             <div className="booking-code-box">
-              <span>{PAGE_STRINGS.bookingModal.referenceCodeLabel}</span>
-              <code>{lastConfirmedBooking?.referenceCode || 'HTL-IN8491'}</code>
+              <span>{PAGE_STRINGS.bookingsPage.refCode}:</span>
+              <code>{confirmedBookingRecord?.referenceCode || lastConfirmedBooking?.referenceCode || 'REF-CONFIRMED'}</code>
             </div>
             <p className="email-note">{PAGE_STRINGS.bookingModal.voucherSentNotice(guestEmail)}</p>
             

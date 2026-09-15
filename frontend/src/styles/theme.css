@@ -7,6 +7,9 @@
 [data-theme="light"],
 body.light-mode {
   --primary-navy: #0b1329;
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-light: rgba(2, 132, 199, 0.12);
   --primary-orange: #f97316;
   --primary-orange-hover: #ea580c;
   --accent-cyan: #06b6d4;
@@ -46,6 +49,9 @@ body.light-mode {
 [data-theme="dark"],
 body.dark-mode {
   --bg-page: #0b1120;
+  --primary: #38bdf8;
+  --primary-hover: #0284c7;
+  --primary-light: rgba(56, 189, 248, 0.15);
   --bg-card: #151e32;
   --bg-card-hover: #1e2942;
   --bg-input: #1e293b;

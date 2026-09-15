@@ -1,33 +1,37 @@
 import React, { useState } from 'react';
-import { Search, BookOpen, GitBranch, Sun, Moon, Menu, X } from 'lucide-react';
+import { Search, BookOpen, Sun, Moon, Menu, X } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useHotelStore, AppTab } from '../store/useHotelStore';
 import { useUrlRouting } from '../hooks/useUrlRouting';
 import { PAGE_STRINGS } from '../constants/pageStrings';
 import BrandLogo from './common/BrandLogo';
 
+// Site-wide header with navigation tabs and theme toggle.
+// API Docs and Source Code links are in the Footer Developer section.
 export const Header: React.FC = () => {
   const { toggleTheme, isDark } = useTheme();
   const { activeTab, bookings } = useHotelStore();
   const { navigateToTab } = useUrlRouting();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Navigate to a tab and close the mobile menu
   const handleNavClick = (tab: AppTab) => {
     navigateToTab(tab);
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Count only confirmed bookings for the badge
   const confirmedCount = bookings.filter((b) => b.status === 'CONFIRMED').length;
 
   return (
     <header className="site-header">
-      {/* Logo */}
+      {/* Logo — clicking navigates to the Search tab */}
       <div className="header-brand" onClick={() => handleNavClick('search')} style={{ cursor: 'pointer' }}>
         <BrandLogo size="md" />
       </div>
 
-      {/* Navigation */}
+      {/* Desktop and expanded-mobile navigation */}
       <nav className={`header-nav ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <button
           type="button"
@@ -43,10 +47,11 @@ export const Header: React.FC = () => {
           onClick={() => handleNavClick('bookings')}
         >
           <BookOpen size={15} /> {PAGE_STRINGS.nav.bookings}
+          {/* Show confirmed booking count badge when non-zero */}
           {confirmedCount > 0 && <span className="nav-badge-count">{confirmedCount}</span>}
         </button>
 
-        {/* Theme Toggle (Desktop only - mobile has header bar toggle) */}
+        {/* Theme toggle — hidden on mobile (mobile has its own button below) */}
         <button
           type="button"
           className="theme-toggle-btn desktop-theme-btn"
@@ -67,20 +72,9 @@ export const Header: React.FC = () => {
             </>
           )}
         </button>
-
-        <a
-          href="https://github.com/aakarsh-sharma118/hotel-rate-comparator"
-          target="_blank"
-          rel="noreferrer"
-          className="nav-link github-pill"
-          title={PAGE_STRINGS.nav.github}
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          <GitBranch size={14} /> {PAGE_STRINGS.nav.github}
-        </a>
       </nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile action bar: theme toggle + hamburger */}
       <div className="mobile-header-actions">
         <button
           type="button"

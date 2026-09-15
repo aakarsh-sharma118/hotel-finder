@@ -1,25 +1,7 @@
-# Hotel Rate Comparator using Temporal Workflows
+# HotelFinder - Multi-Supplier Hotel Search Engine
 
 ## Description
-A resilient, high-performance distributed hotel rate comparison platform aggregating real-time hotel inventories across multiple global wholesale suppliers (Supplier A & Supplier B) with guaranteed lowest rate parity in Indian Rupees (₹).
-
-The system queries supplier inventories in parallel, handles timeouts with a strict 5-second SLA, retries transient failures automatically using Temporal workflows, and falls back gracefully when services are unavailable. Features include deep search query synchronization, theme-sensitive visuals, responsive parent-box containment across all viewports, interactive favorites, and complete reservation lifecycle management.
-
-## Environment Variables
-The following environment variables can be configured in `backend/.env` or the repository root:
-
-```env
-# Server Port
-PORT=3001
-
-# Temporal Orchestration Engine
-TEMPORAL_ADDRESS=localhost:7233
-TEMPORAL_TASK_QUEUE=hotel-rate-comparator
-
-# Supplier Endpoints
-SUPPLIER_A_URL=http://localhost:3001/supplierA/hotels
-SUPPLIER_B_URL=http://localhost:3001/supplierB/hotels
-```
+A resilient, enterprise-grade multi-supplier hotel rate comparison engine and booking platform. Aggregates live hotel rates across multiple wholesale suppliers in parallel with guaranteed lowest-price discovery, Temporal workflow orchestration, resilient offline fallback, OpenAPI 3.0 documentation, and persistent reservations management.
 
 ## How to Start
 
@@ -28,28 +10,27 @@ SUPPLIER_B_URL=http://localhost:3001/supplierB/hotels
 npm install
 ```
 
-### 2. Start Application
-To run the backend server, worker, and frontend client concurrently:
+### 2. Start Development Servers
+Runs backend API (port 3001), Temporal background worker, and React frontend (port 3000) concurrently:
 ```bash
 npm run dev
 ```
 
-Alternatively, run each service independently:
-- **Backend API & Suppliers**: `npm run dev:backend` (runs on http://localhost:3001)
-- **Frontend Client**: `npm run dev:frontend` (runs on http://localhost:3000)
-- **Background Worker**: `npm run dev:worker`
+- **Frontend Application**: http://localhost:3000
+- **Backend API & Swagger Docs**: http://localhost:3001/api-docs
 
-### 3. Run Tests and Linting
-- **Run all tests**: `npm test`
-- **Run linting**: `npm run lint`
-- **Build production bundles**: `npm run build`
+## How to Test
 
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Run test suites across both frontend and backend:
+```bash
+npm test
+```
 
----
+To run individual test suites:
+- **Backend Tests (Vitest)**: `cd backend && npm test`
+- **Frontend Tests (Vitest)**: `cd frontend && npm test`
+- **TypeScript Type Check**: `npm run lint`
 
-### Author & Source Code Ownership
-- **Author**: Aakarsh Sharma
-- **Original Source Code & Architecture**: Developed, designed, and maintained by Aakarsh Sharma.
-
+## Author
+**Aakarsh Sharma**
+- GitHub: [@aakarsh-sharma118](https://github.com/aakarsh-sharma118)

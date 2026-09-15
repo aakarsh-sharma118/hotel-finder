@@ -31,10 +31,33 @@ export function sanitizeInput(input: any): string {
 }
 
 /**
+ * Decodes HTML entities such as &amp;, &lt;, &gt;, &quot;, &#39;.
+ * Runs multiple passes to cleanly resolve multi-encoded entities (e.g. &amp;amp;).
+ */
+export function decodeHtmlEntities(str: string): string {
+  if (!str) return '';
+  let result = String(str);
+  for (let i = 0; i < 3; i++) {
+    const prev = result;
+    result = result
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&apos;/g, "'");
+    if (result === prev) break;
+  }
+  return result;
+}
+
+/**
  * Generates booking reference code.
  */
 export function generateBookingReference(): string {
-  return `HTL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+  const ts = Date.now().toString(36).toUpperCase();
+  const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `REF-${ts}-${rand}`;
 }
 
 /**

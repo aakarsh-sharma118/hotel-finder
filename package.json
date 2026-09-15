@@ -1,8 +1,8 @@
 {
-  "name": "hotel-rate-comparator-root",
+  "name": "hotel-finder-root",
   "version": "1.0.0",
   "private": true,
-  "description": "Hotel Rate Comparator using Temporal Workflows - Full-Stack Application",
+  "description": "Hotel Finder using Temporal Workflows - Full-Stack Application",
   "workspaces": [
     "backend",
     "frontend"
