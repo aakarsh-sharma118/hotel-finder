@@ -3,6 +3,7 @@ import { Code2, GitBranch } from 'lucide-react';
 import { useHotelStore } from '../store/useHotelStore';
 import { useUrlRouting } from '../hooks/useUrlRouting';
 import { PAGE_STRINGS } from '../constants/pageStrings';
+import { getApiDocsUrl } from '../api/hotelApi';
 import BrandLogo from './common/BrandLogo';
 
 /**
@@ -71,7 +72,7 @@ export const Footer: React.FC = () => {
             <li>
               {/* Opens Swagger UI in a new tab */}
               <a
-                href="/api-docs"
+                href={getApiDocsUrl()}
                 target="_blank"
                 rel="noreferrer"
                 className="footer-dev-link"

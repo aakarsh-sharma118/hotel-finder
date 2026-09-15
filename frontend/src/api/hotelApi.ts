@@ -37,6 +37,16 @@ export const getApiBaseUrl = (): string => {
 
 export const API_BASE = getApiBaseUrl();
 
+/**
+ * Dynamically resolves the Swagger API documentation URL.
+ * Appends /api-docs/ to configured backend base URL in production,
+ * or defaults to relative /api-docs in local development.
+ */
+export const getApiDocsUrl = (): string => {
+  const baseUrl = getApiBaseUrl();
+  return baseUrl ? `${baseUrl}/api-docs/` : '/api-docs';
+};
+
 // Axios client instance with standard configuration
 export const hotelApiClient = axios.create({
   baseURL: API_BASE,

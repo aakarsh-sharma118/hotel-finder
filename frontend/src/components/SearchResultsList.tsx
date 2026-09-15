@@ -70,7 +70,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
     resetForm,
     backendHotels,
     isLoadingCatalog,
-    fetchCatalogForCity,
+    setBackendHotels,
   } = useHotelStore();
 
   // Determine current display city (empty string indicates all destinations across India)
@@ -84,12 +84,12 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
     limit: 200,
   });
 
-  // Fetch initial catalog on load if empty
+  // Synchronize catalog results from TanStack Query into store cache with zero duplicate network calls
   useEffect(() => {
-    if (backendHotels.length === 0 && !result && !isLoading) {
-      fetchCatalogForCity(displayCity);
+    if (catalogData?.hotels && catalogData.hotels.length > 0) {
+      setBackendHotels(catalogData.hotels);
     }
-  }, [displayCity, backendHotels.length, result, isLoading, fetchCatalogForCity]);
+  }, [catalogData?.hotels, setBackendHotels]);
 
   // Check if search returned zero results
   const isNoResultsFound = Boolean(

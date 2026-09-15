@@ -303,7 +303,6 @@ export const useHotelStore = create<HotelStoreState>((set, get) => ({
       lastSearchResult: null,
       currentPage: 1,
     });
-    get().fetchCatalogForCity(targetCity);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 
@@ -326,6 +325,5 @@ export const useHotelStore = create<HotelStoreState>((set, get) => ({
       const basePath = getAppBasePath();
       window.history.pushState({}, '', basePath ? `${basePath}/` : '/');
     }
-    get().fetchCatalogForCity('Meerut');
   },
 }));

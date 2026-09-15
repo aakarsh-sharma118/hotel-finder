@@ -12,6 +12,20 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SearchForm } from '../src/components/SearchForm';
 import { useHotelStore } from '../src/store/useHotelStore';
 
+// Mock hotelApi to prevent unhandled network requests in test environment
+vi.mock('../src/api/hotelApi', () => ({
+  hotelApi: {
+    getDestinations: vi.fn().mockResolvedValue({ destinations: [], total: 0 }),
+    getHotelCatalog: vi.fn().mockResolvedValue({ city: '', total: 0, page: 1, limit: 200, totalPages: 1, count: 0, hotels: [] }),
+  },
+  getApiBaseUrl: vi.fn().mockReturnValue(''),
+  getApiDocsUrl: vi.fn().mockReturnValue('/api-docs'),
+  hotelApiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
+}));
+
 // Creates a fresh QueryClient instance for isolated test execution
 const createTestQueryClient = () =>
   new QueryClient({
