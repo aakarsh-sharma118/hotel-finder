@@ -56,7 +56,7 @@ export const Header: React.FC = () => {
           type="button"
           className="theme-toggle-btn desktop-theme-btn"
           onClick={toggleTheme}
-          title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+          title={isDark ? PAGE_STRINGS.nav.switchToLight : PAGE_STRINGS.nav.switchToDark}
           aria-label={PAGE_STRINGS.nav.themeToggleLabel}
           data-testid="theme-toggle-btn"
         >

@@ -26,6 +26,8 @@ import {
   IndianRupee,
   ArrowRight,
   Tag,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { HotelListSkeleton } from './skeletons/HotelListSkeleton';
 import { SearchWorkflowResult, HotelCardData } from '../types';
@@ -195,8 +197,8 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
           <div className="results-title-badge-row">
             <h2 className="results-title">
               {displayCity
-                ? `${PAGE_STRINGS.results.heading} (${displayCity} • ${sortedHotels.length} ${sortedHotels.length === 1 ? 'Hotel' : 'Hotels'})`
-                : `${PAGE_STRINGS.results.heading} (All Destinations • ${sortedHotels.length} ${sortedHotels.length === 1 ? 'Hotel' : 'Hotels'})`}
+                ? `${PAGE_STRINGS.results.heading} (${displayCity} • ${sortedHotels.length} ${sortedHotels.length === 1 ? PAGE_STRINGS.results.pagination.hotelSingle : PAGE_STRINGS.results.pagination.hotelsPlural})`
+                : `${PAGE_STRINGS.results.heading} (${PAGE_STRINGS.results.pagination.allDestinations} • ${sortedHotels.length} ${sortedHotels.length === 1 ? PAGE_STRINGS.results.pagination.hotelSingle : PAGE_STRINGS.results.pagination.hotelsPlural})`}
             </h2>
             <span className="results-currency-badge">
               Prices in {PAGE_STRINGS.currency.symbol} ({PAGE_STRINGS.currency.code})
@@ -246,7 +248,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
               {/* Amenity Filter Category */}
               <div className="filter-category-block">
                 <span className="filter-category-title">
-                  <Sparkles size={13} /> Perks & Inclusions
+                  <Sparkles size={13} /> {PAGE_STRINGS.results.filters.perksAndInclusions}
                 </span>
                 <div className="filter-pills-row">
                   <button
@@ -271,7 +273,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
             <div className="filter-price-card" data-testid="price-filter-group">
               <div className="price-card-header">
                 <span className="filter-category-title">
-                  <IndianRupee size={13} /> Nightly Budget
+                  <IndianRupee size={13} /> {PAGE_STRINGS.results.filters.nightlyBudget}
                 </span>
                 <div className="price-header-actions">
                   <span className="price-range-badge" data-testid="price-range-badge">
@@ -285,10 +287,10 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                         setMinPrice(null);
                         setMaxPrice(null);
                       }}
-                      title="Reset budget filter"
-                      aria-label="Reset price filter"
+                      title={PAGE_STRINGS.results.filters.resetBudgetTitle}
+                      aria-label={PAGE_STRINGS.results.filters.resetBudgetAria}
                     >
-                      <RotateCcw size={11} /> Reset
+                      <RotateCcw size={11} /> {PAGE_STRINGS.results.filters.resetBudgetBtn}
                     </button>
                   )}
                 </div>
@@ -308,7 +310,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                     setMaxPrice(val >= 15000 ? null : val);
                   }}
                   className="price-range-slider"
-                  aria-label="Filter maximum nightly rate"
+                  aria-label={PAGE_STRINGS.results.filters.sliderAriaLabel}
                 />
                 <span className="slider-bound">₹15,000+</span>
               </div>
@@ -323,7 +325,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                     setMaxPrice(null);
                   }}
                 >
-                  All Prices
+                  {PAGE_STRINGS.results.filters.allPrices}
                 </button>
                 <button
                   type="button"
@@ -333,7 +335,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                     setMaxPrice(3000);
                   }}
                 >
-                  &lt; ₹3,000
+                  {PAGE_STRINGS.results.filters.under3k}
                 </button>
                 <button
                   type="button"
@@ -343,7 +345,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                     setMaxPrice(6000);
                   }}
                 >
-                  ₹3,000–₹6,000
+                  {PAGE_STRINGS.results.filters.between3kAnd6k}
                 </button>
                 <button
                   type="button"
@@ -353,7 +355,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                     setMaxPrice(null);
                   }}
                 >
-                  &gt; ₹6,000
+                  {PAGE_STRINGS.results.filters.above6k}
                 </button>
               </div>
             </div>
@@ -364,8 +366,11 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
             <div className="results-count-chip">
               <Compass size={14} className="count-icon" />
               <span>
-                Showing <strong>{sortedHotels.length}</strong> {sortedHotels.length === 1 ? 'verified stay' : 'verified stays'}
-                {displayCity ? ` in ${displayCity}` : ' across India'}
+                {PAGE_STRINGS.results.pagination.showingPrefix} <strong>{sortedHotels.length}</strong>{' '}
+                {sortedHotels.length === 1 ? PAGE_STRINGS.results.filters.verifiedStaySingle : PAGE_STRINGS.results.filters.verifiedStaysPlural}
+                {displayCity
+                  ? ` ${PAGE_STRINGS.results.filters.inCityPrefix} ${displayCity}`
+                  : ` ${PAGE_STRINGS.results.filters.acrossIndia}`}
               </span>
             </div>
 
@@ -537,7 +542,13 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
               const numScore = parseFloat(ratingScore);
               const displayStars = Math.min(5, Math.max(1, Math.round(numScore)));
               const ratingLabel =
-                numScore >= 4.5 ? 'Exceptional' : numScore >= 4.0 ? 'Very Good' : numScore >= 3.0 ? 'Good' : 'Fair';
+                numScore >= 4.5
+                  ? PAGE_STRINGS.results.ratings.exceptional
+                  : numScore >= 4.0
+                  ? PAGE_STRINGS.results.ratings.veryGood
+                  : numScore >= 3.0
+                  ? PAGE_STRINGS.results.ratings.good
+                  : PAGE_STRINGS.results.ratings.fair;
               const reviewsCount = hotel.reviewsCount || (displayStars * 85 + 60);
               // Check if current hotel offers free cancellation
               const hasFreeCancellation = hotel.amenities.some((a) => a.toLowerCase().includes('cancellation'));
@@ -575,7 +586,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                         <Heart
                           size={17}
                           fill={isFav ? '#ef4444' : 'none'}
-                          color={isFav ? '#ef4444' : '#ffffff'}
+                          color={isFav ? '#ef4444' : '#828282'}
                         />
                       </button>
                     </div>
@@ -633,7 +644,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                             ₹{formatPriceINR(hotel.rateA)}
                           </span>
                         </div>
-                        <span className="compare-divider">vs</span>
+                        <span className="compare-divider">{PAGE_STRINGS.results.compareVs}</span>
                         <div className="compare-item">
                           <span className="compare-supplier-name">{PAGE_STRINGS.results.supplierB}</span>
                           <span className={`compare-price ${!isWinnerA ? 'cheapest' : ''}`}>
@@ -643,7 +654,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                         <div className="compare-callout">
                           <Sparkles size={13} />
                           <strong>
-                            {hotel.cheaperSupplier} {PAGE_STRINGS.results.savePrefix.toLowerCase()}s ₹{formatPriceINR(hotel.savings)} ({savingsPercent}% cheaper)!
+                            {hotel.cheaperSupplier} {PAGE_STRINGS.results.savePrefix.toLowerCase()}s ₹{formatPriceINR(hotel.savings)} ({savingsPercent}% {PAGE_STRINGS.results.cheaperBadgeSuffix})!
                           </strong>
                         </div>
                       </div>
@@ -651,14 +662,8 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
 
                     {/* Pricing & CTA Column */}
                     <div className="horizontal-action-col">
-                      {hasFreeCancellation && (
-                        <div className="cancellation-guarantee-pill free">
-                          <ShieldCheck size={12} />
-                          <span>{PAGE_STRINGS.results.freeCancellationBadge}</span>
-                        </div>
-                      )}
                       <span className="price-lead-label">
-                        Wholesale Rate ({hotel.cheaperSupplier})
+                        {PAGE_STRINGS.results.wholesaleRatePrefix} ({hotel.cheaperSupplier})
                       </span>
                       <div className="price-display-box">
                         <span className="price-currency">₹</span>
@@ -767,17 +772,17 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                       <div className="grid-compare-supplier">
                         <span className="supplier-pill pill-a">A</span>
                         <div className="compare-val-block">
-                          <span className="supplier-label-mini">Supplier A</span>
+                          <span className="supplier-label-mini">{PAGE_STRINGS.results.supplierA}</span>
                           <span className={`grid-compare-val ${isWinnerA ? 'winner' : ''}`}>
                             ₹{formatPriceINR(hotel.rateA)}
                           </span>
                         </div>
                       </div>
-                      <span className="grid-vs">vs</span>
+                      <span className="grid-vs">{PAGE_STRINGS.results.compareVs}</span>
                       <div className="grid-compare-supplier">
                         <span className="supplier-pill pill-b">B</span>
                         <div className="compare-val-block">
-                          <span className="supplier-label-mini">Supplier B</span>
+                          <span className="supplier-label-mini">{PAGE_STRINGS.results.supplierB}</span>
                           <span className={`grid-compare-val ${!isWinnerA ? 'winner' : ''}`}>
                             ₹{formatPriceINR(hotel.rateB)}
                           </span>
@@ -789,7 +794,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                       <span className="compare-text">
                         {PAGE_STRINGS.results.bestDealLabel}{' '}
                         <strong className="winner-highlight">
-                          {hotel.cheaperSupplier} ({savingsPercent}% less)
+                          {hotel.cheaperSupplier} ({savingsPercent}% {PAGE_STRINGS.results.lessBadgeSuffix})
                         </strong>
                       </span>
                       {hasFreeCancellation && (
@@ -834,23 +839,30 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
           {totalPages > 1 && (
             <div className="pagination-container" data-testid="catalog-pagination">
               <span className="pagination-info">
-                Showing {(activePage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(activePage * ITEMS_PER_PAGE, sortedHotels.length)} of {sortedHotels.length} verified stays
+                {PAGE_STRINGS.results.pagination.summaryText(
+                  (activePage - 1) * ITEMS_PER_PAGE + 1,
+                  Math.min(activePage * ITEMS_PER_PAGE, sortedHotels.length),
+                  sortedHotels.length
+                )}
               </span>
               <div className="pagination-controls">
                 <button
                   type="button"
-                  className="pagination-btn"
+                  className="pagination-btn pagination-prev-btn"
                   disabled={activePage <= 1}
+                  aria-label={PAGE_STRINGS.results.pagination.previousAriaLabel}
                   onClick={() => {
                     setCurrentPage(activePage - 1);
                     document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth' });
                   }}
                 >
-                  Previous
+                  <ChevronLeft size={14} aria-hidden="true" />
+                  <span className="pagination-text-desktop">{PAGE_STRINGS.results.pagination.previous}</span>
+                  <span className="pagination-text-mobile">{PAGE_STRINGS.results.pagination.previousShort}</span>
                 </button>
                 {getPageNumbers().map((pageItem, index) =>
                   pageItem === '...' ? (
-                    <span key={`ellipsis-${index}`} className="pagination-ellipsis">
+                    <span key={`ellipsis-${index}`} className="pagination-ellipsis" aria-hidden="true">
                       …
                     </span>
                   ) : (
@@ -858,6 +870,12 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                       key={pageItem}
                       type="button"
                       className={`pagination-num-btn ${activePage === pageItem ? 'active' : ''}`}
+                      aria-label={
+                        activePage === pageItem
+                          ? PAGE_STRINGS.results.pagination.currentPageAriaLabel(pageItem)
+                          : PAGE_STRINGS.results.pagination.pageAriaLabel(pageItem)
+                      }
+                      aria-current={activePage === pageItem ? 'page' : undefined}
                       onClick={() => {
                         setCurrentPage(Number(pageItem));
                         document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth' });
@@ -869,14 +887,17 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
                 )}
                 <button
                   type="button"
-                  className="pagination-btn"
+                  className="pagination-btn pagination-next-btn"
                   disabled={activePage >= totalPages}
+                  aria-label={PAGE_STRINGS.results.pagination.nextAriaLabel}
                   onClick={() => {
                     setCurrentPage(activePage + 1);
                     document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth' });
                   }}
                 >
-                  Next
+                  <span className="pagination-text-desktop">{PAGE_STRINGS.results.pagination.next}</span>
+                  <span className="pagination-text-mobile">{PAGE_STRINGS.results.pagination.nextShort}</span>
+                  <ChevronRight size={14} aria-hidden="true" />
                 </button>
               </div>
             </div>

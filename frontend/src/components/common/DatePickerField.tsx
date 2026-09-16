@@ -15,6 +15,7 @@ import PropTypes from 'prop-types';
 import { DayPicker } from 'react-day-picker';
 import { format, isValid } from 'date-fns';
 import { Calendar as CalendarIcon, X } from 'lucide-react';
+import { PAGE_STRINGS } from '../../constants/pageStrings';
 import 'react-day-picker/style.css';
 
 export interface DatePickerFieldProps {
@@ -70,7 +71,7 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
   maxDate,
   icon,
   disabled = false,
-  placeholder = 'Select date',
+  placeholder = PAGE_STRINGS.common.selectDatePlaceholder,
   error,
   helperText,
 }) => {
@@ -189,7 +190,7 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
                 tabIndex={0}
                 className="date-picker-clear"
                 onClick={handleClear}
-                aria-label="Clear date"
+                aria-label={PAGE_STRINGS.common.clearDate}
               >
                 <X size={14} />
               </span>
@@ -207,7 +208,7 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
             className="date-picker-popover animate-fade-in"
             role="dialog"
             aria-modal="true"
-            aria-label="Calendar view"
+            aria-label={PAGE_STRINGS.common.calendarView}
           >
             <DayPicker
               mode="single"

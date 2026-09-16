@@ -153,7 +153,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) =
               <datalist id="destination-options">
                 {availableDestinations.map((d) => (
                   <option key={d.city} value={d.city}>
-                    {d.hotelCount} verified hotels from ₹{d.minPrice.toLocaleString('en-IN')}/night
+                    {PAGE_STRINGS.searchForm.verifiedHotelsOption(d.hotelCount, d.minPrice)}
                   </option>
                 ))}
               </datalist>
@@ -229,7 +229,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) =
         {availableDestinations.length > 0 && (
           <div className="search-destinations-quickrow">
             <span className="quickrow-label">
-              <Sparkles size={12} /> Popular Hubs:
+              <Sparkles size={12} /> {PAGE_STRINGS.searchForm.popularHubs}
             </span>
             <div className="quickrow-chips">
               {availableDestinations.slice(0, 6).map((dest) => (
@@ -249,7 +249,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) =
                     <MapPin size={11} /> {dest.city}
                   </span>
                   <span className="quickrow-chip-price">
-                    from ₹{dest.minPrice.toLocaleString('en-IN')}
+                    {PAGE_STRINGS.searchForm.fromPricePrefix} ₹{dest.minPrice.toLocaleString('en-IN')}
                   </span>
                 </button>
               ))}
