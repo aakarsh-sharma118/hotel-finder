@@ -7,24 +7,24 @@
  * @module components/SearchForm
  */
 
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { MapPin, Calendar, Users, RotateCcw, Sparkles } from 'lucide-react';
-import { SearchHotelsParams, DestinationSummary } from '../types';
-import { useHotelStore } from '../store/useHotelStore';
-import { useUrlRouting } from '../hooks/useUrlRouting';
-import { useDestinationsQuery } from '../hooks/useHotelQueries';
-import { InputField } from './common/InputField';
-import { DatePickerField } from './common/DatePickerField';
-import { CustomSelect } from './common/CustomSelect';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { MapPin, Calendar, Users, RotateCcw, Sparkles } from "lucide-react";
+import { SearchHotelsParams, DestinationSummary } from "../types";
+import { useHotelStore } from "../store/useHotelStore";
+import { useUrlRouting } from "../hooks/useUrlRouting";
+import { useDestinationsQuery } from "../hooks/useHotelQueries";
+import { InputField } from "./common/InputField";
+import { DatePickerField } from "./common/DatePickerField";
+import { CustomSelect } from "./common/CustomSelect";
 import {
   PAGE_STRINGS,
   VALIDATION_REGEX,
   VALIDATION_MESSAGES,
   GUEST_OPTIONS,
   isRecognizedDestination,
-} from '../constants/appConsts';
-import { sanitizeInput } from '../utils/utilityManager';
+} from "../constants/appConsts";
+import { sanitizeInput } from "../utils/utilityManager";
 
 export { GUEST_OPTIONS };
 
@@ -33,7 +33,10 @@ interface SearchFormProps {
   isLoading: boolean;
 }
 
-export const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) => {
+export const SearchForm: React.FC<SearchFormProps> = ({
+  onSearch,
+  isLoading,
+}) => {
   // Store values and setters from Zustand state
   const {
     city,
@@ -52,10 +55,11 @@ export const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) =
 
   // Fetch verified destinations dynamically from backend catalog
   const destinationsQuery = useDestinationsQuery();
-  const availableDestinations: DestinationSummary[] = destinationsQuery.data?.destinations || [];
+  const availableDestinations: DestinationSummary[] =
+    destinationsQuery.data?.destinations || [];
 
   // Minimum allowed date (today) in YYYY-MM-DD format
-  const todayDateString = new Date().toISOString().split('T')[0];
+  const todayDateString = new Date().toISOString().split("T")[0];
 
   // Checks if entered city matches backend catalog or static destination fallback
   const isCityValid = (cityName: string): boolean => {
@@ -63,7 +67,11 @@ export const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) =
     if (availableDestinations.length > 0) {
       return availableDestinations.some((d) => {
         const destLower = d.city.toLowerCase();
-        return destLower === clean || destLower.includes(clean) || clean.includes(destLower);
+        return (
+          destLower === clean ||
+          destLower.includes(clean) ||
+          clean.includes(destLower)
+        );
       });
     }
     return isRecognizedDestination(clean);
@@ -92,8 +100,9 @@ export const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) =
     const effectiveCheckIn = sanitizeInput(checkIn) || todayDateString;
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const effectiveCheckOut = sanitizeInput(checkOut) || tomorrow.toISOString().split('T')[0];
-    const effectiveGuests = sanitizeInput(guests) || '2 Adults';
+    const effectiveCheckOut =
+      sanitizeInput(checkOut) || tomorrow.toISOString().split("T")[0];
+    const effectiveGuests = sanitizeInput(guests) || "2 Adults";
 
     // Synchronize query parameters to browser address bar
     syncSearchToUrl({
@@ -114,14 +123,14 @@ export const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) =
     // Smooth scroll down to hotel results
     setTimeout(() => {
       const resultsEl =
-        document.getElementById('search-results') ||
-        document.querySelector('.search-results-section');
+        document.getElementById("search-results") ||
+        document.querySelector(".search-results-section");
       if (resultsEl) {
         const targetTop =
           resultsEl.getBoundingClientRect().top + window.pageYOffset - 24;
         window.scrollTo({
           top: targetTop,
-          behavior: 'smooth',
+          behavior: "smooth",
         });
       }
     }, 150);
@@ -153,7 +162,10 @@ export const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) =
               <datalist id="destination-options">
                 {availableDestinations.map((d) => (
                   <option key={d.city} value={d.city}>
-                    {PAGE_STRINGS.searchForm.verifiedHotelsOption(d.hotelCount, d.minPrice)}
+                    {PAGE_STRINGS.searchForm.verifiedHotelsOption(
+                      d.hotelCount,
+                      d.minPrice,
+                    )}
                   </option>
                 ))}
               </datalist>
@@ -171,9 +183,9 @@ export const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) =
                 setCheckIn(val);
                 // Ensure check-out is after check-in if already set
                 if (checkOut && val && val >= checkOut) {
-                  const [y, m, d] = val.split('-').map(Number);
+                  const [y, m, d] = val.split("-").map(Number);
                   const nextDay = new Date(y, m - 1, d + 1);
-                  setCheckOut(nextDay.toISOString().split('T')[0]);
+                  setCheckOut(nextDay.toISOString().split("T")[0]);
                 }
               }}
               placeholder={PAGE_STRINGS.searchForm.checkInPlaceholder}
@@ -237,7 +249,9 @@ export const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) =
                   key={dest.city}
                   type="button"
                   className={`quickrow-chip-btn ${
-                    city.toLowerCase() === dest.city.toLowerCase() ? 'active' : ''
+                    city.toLowerCase() === dest.city.toLowerCase()
+                      ? "active"
+                      : ""
                   }`}
                   onClick={() => {
                     setCity(dest.city);
@@ -246,10 +260,14 @@ export const SearchForm: React.FC<SearchFormProps> = ({ onSearch, isLoading }) =
                   disabled={isLoading}
                 >
                   <span className="quickrow-chip-name">
-                    <MapPin size={11} /> {dest.city}
+                    <span>
+                      <MapPin size={11} />
+                    </span>{" "}
+                    {dest.city}
                   </span>
                   <span className="quickrow-chip-price">
-                    {PAGE_STRINGS.searchForm.fromPricePrefix} ₹{dest.minPrice.toLocaleString('en-IN')}
+                    {PAGE_STRINGS.searchForm.fromPricePrefix} ₹
+                    {dest.minPrice.toLocaleString("en-IN")}
                   </span>
                 </button>
               ))}
