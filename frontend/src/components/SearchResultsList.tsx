@@ -79,7 +79,13 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
   const displayCity = city.trim() || result?.city || '';
 
   // Fetch hotel catalog via TanStack Query when no search workflow result is active (fetch all available stays)
-  const { data: catalogData, isLoading: isCatalogQueryLoading } = useHotelCatalogQuery(displayCity, {
+  const {
+    data: catalogData,
+    isLoading: isCatalogQueryLoading,
+    isPending: isCatalogQueryPending,
+    isFetching: isCatalogQueryFetching,
+    error: catalogQueryError,
+  } = useHotelCatalogQuery(displayCity, {
     minPrice: minPrice || undefined,
     maxPrice: maxPrice || undefined,
     page: 1,
@@ -186,8 +192,24 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
     return pages;
   };
 
-  // Show skeleton during loading
-  const showLoadingSkeleton = isLoading || (isLoadingCatalog && rawHotelCards.length === 0 && isCatalogQueryLoading);
+  const effectiveError =
+    error ||
+    (catalogQueryError
+      ? (catalogQueryError as any).message || PAGE_STRINGS.results.failedToLoadCatalog
+      : null);
+
+  // Show skeleton if actively searching OR if initial catalog is pending and not yet loaded (e.g. on initial call or when Render is restarting)
+  const isPendingInitialCatalog =
+    !result &&
+    rawHotelCards.length === 0 &&
+    !effectiveError &&
+    (isCatalogQueryLoading ||
+      isCatalogQueryPending ||
+      isCatalogQueryFetching ||
+      isLoadingCatalog ||
+      !catalogData);
+
+  const showLoadingSkeleton = isLoading || isPendingInitialCatalog;
 
   return (
     <section id="search-results" className="search-results-section" data-testid="search-results-list">
@@ -417,12 +439,12 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
       {showLoadingSkeleton && <HotelListSkeleton count={6} />}
 
       {/* Error Banner */}
-      {!isLoading && error && (
+      {!isLoading && !showLoadingSkeleton && effectiveError && (
         <div className="results-alert alert-error" data-testid="results-error-banner">
           <AlertCircle size={20} />
           <div>
             <strong>{PAGE_STRINGS.results.searchInterrupted}</strong>
-            <p>{error}</p>
+            <p>{effectiveError}</p>
           </div>
         </div>
       )}
@@ -467,7 +489,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
       )}
 
       {/* Empty Filter State */}
-      {!showLoadingSkeleton && !error && !isNoResultsFound && sortedHotels.length === 0 && (
+      {!showLoadingSkeleton && !effectiveError && !isNoResultsFound && sortedHotels.length === 0 && (
         sortBy === 'favorites' ? (
           <div className="results-alert alert-empty" data-testid="empty-favorites-banner">
             <Heart size={24} color="#ef4444" />
@@ -506,7 +528,7 @@ export const SearchResultsList: React.FC<SearchResultsListProps> = ({
       )}
 
       {/* Paginated Hotel Cards */}
-      {!showLoadingSkeleton && !error && !isNoResultsFound && paginatedHotels.length > 0 && (
+      {!showLoadingSkeleton && !effectiveError && !isNoResultsFound && paginatedHotels.length > 0 && (
         <>
           <div className={viewMode === 'list' ? 'hotel-cards-list-view' : 'hotel-cards-grid'}>
             {paginatedHotels.map((hotel, index) => {

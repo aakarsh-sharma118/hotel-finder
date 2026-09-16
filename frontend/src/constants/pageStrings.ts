@@ -165,6 +165,7 @@ export const PAGE_STRINGS = {
     bookNow: 'Reserve Room',
     viewDetails: 'View Details',
     searchInterrupted: 'Search Interrupted',
+    failedToLoadCatalog: 'Failed to load catalog',
     noHotelsTitle: 'No Rooms Available',
     noHotelsDesc: 'Neither supplier returned available inventory for the selected dates and destination. Please try alternate dates or city.',
     favoritesEmptyTitle: 'No favorite hotels saved yet',
