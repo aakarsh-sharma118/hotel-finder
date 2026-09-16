@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, BookOpen, Sun, Moon, Menu, X } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useHotelStore, AppTab } from '../store/useHotelStore';
@@ -14,6 +14,26 @@ export const Header: React.FC = () => {
   const { navigateToTab } = useUrlRouting();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Close mobile menu on Escape key press or window resize to desktop
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    const handleResize = () => {
+      if (window.innerWidth > 768 && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [mobileMenuOpen]);
+
   // Navigate to a tab and close the mobile menu
   const handleNavClick = (tab: AppTab) => {
     navigateToTab(tab);
@@ -26,6 +46,14 @@ export const Header: React.FC = () => {
 
   return (
     <header className="site-header">
+      {/* Mobile backdrop overlay to close menu on outside click */}
+      {mobileMenuOpen && (
+        <div
+          className="mobile-nav-backdrop"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
       {/* Logo — clicking navigates to the Search tab */}
       <div className="header-brand" onClick={() => handleNavClick('search')} style={{ cursor: 'pointer' }}>
         <BrandLogo size="md" />
